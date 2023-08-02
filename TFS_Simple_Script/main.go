@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"log"
+	"os/exec"
 	"time"
 
 	"github.com/ShareChat/moj-feed-go-lib/option"
@@ -32,7 +33,7 @@ type CounterFeatures map[string]option.Option[any]
 func createGrpcTardisFeatureService(servingAddress string) *grpcpool.Pool {
 	//var factory grpcpool.Factory
 	factory := func() (*grpc.ClientConn, error) {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*100)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*1000)
 		defer cancel()
 
 		var tlsConf tls.Config
@@ -90,7 +91,7 @@ func callTardisFeatureService(ctx context.Context, pool *grpcpool.Pool, request 
 
 func main() {
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*100)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1000)
 	defer cancel()
 
 	pool := createGrpcTardisFeatureService("live-tardis-feature-service.sharechat.internal:443")
@@ -102,8 +103,13 @@ func main() {
 
 	saveResponseToFIle(parsedResponseInOneGo, "oneGo.json")
 	saveResponseToFIle(parsedResponseParallel, "parallel.json")
-	//file1, _ := os.Create("oneGo.txt")
-	//file2, _ := os.Create("parallel.txt")
-	//fmt.Fprintln(file1, parsedResponseInOneGo)
-	//fmt.Fprintln(file2, parsedResponseParallel)
+
+	cmd := exec.Command("diff", "parallel.json", "oneGo.json")
+
+	stdout, err := cmd.Output()
+	if err != nil {
+		fmt.Println("Differences found:")
+		return
+	}
+	fmt.Println("No Differences found:", stdout)
 }
