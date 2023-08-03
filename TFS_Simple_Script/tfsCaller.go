@@ -37,7 +37,7 @@ func fetchFeaturesParallel(ctx context.Context, pool *grpcpool.Pool, chatRoomIDs
 
 			response, err := callTardisFeatureService(ctx, pool, request)
 			if err != nil {
-				fmt.Printf("Error calling Tardis Feature service: %v", err)
+				fmt.Printf("Error calling Tardis Feature service in parallel: %v", err)
 				return err
 			}
 			crossFeatures, err := parseTardisFeatureResponse(ctx, response)
@@ -71,7 +71,7 @@ func fetchFeaturesInOneGo(ctx context.Context, pool *grpcpool.Pool, chatroomIds 
 
 	response, err := callTardisFeatureService(ctx, pool, request)
 	if err != nil {
-		fmt.Printf("Error calling Tardis Feature service: %v", err)
+		fmt.Printf("Error calling Tardis Feature service in one go: %v", err)
 	}
 
 	parsedResponse, err := parseTardisFeatureResponse(ctx, response)
