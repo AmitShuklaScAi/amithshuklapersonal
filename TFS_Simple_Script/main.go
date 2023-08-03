@@ -9,11 +9,13 @@ import (
 	"time"
 
 	"github.com/ShareChat/moj-feed-go-lib/option"
+	tfs_grpc_codec "github.com/ShareChat/tardis-feature-service-protocol/grpc_codec"
 	tfs "github.com/ShareChat/tardis-feature-service-protocol/models/v1/featureservice"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	grpcpool "github.com/processout/grpc-go-pool"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/encoding"
 )
 
 const (
@@ -29,6 +31,10 @@ type FeatureSetParams struct {
 }
 
 type CounterFeatures map[string]option.Option[any]
+
+func init() {
+	encoding.RegisterCodec(tfs_grpc_codec.VtCodecWithProtoFallback{})
+}
 
 func createGrpcTardisFeatureService(servingAddress string) *grpcpool.Pool {
 	//var factory grpcpool.Factory
@@ -81,7 +87,7 @@ func callTardisFeatureService(ctx context.Context, pool *grpcpool.Pool, request 
 
 	client := tfs.NewTardisFeatureServiceClient(conn)
 
-	response, err := client.GetFeatures(ctx, request /*grpc.CallContentSubtype(tfs_grpc_codec.GrpcCodecName)*/)
+	response, err := client.GetFeatures(ctx, request, grpc.CallContentSubtype(tfs_grpc_codec.GrpcCodecName))
 	if err != nil {
 		return nil, err
 	}
